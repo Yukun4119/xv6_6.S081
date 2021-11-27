@@ -3,7 +3,6 @@
 #include "user/user.h"
 #include "kernel/fs.h"
 
-
 char*
 fmtname(char *path)
 {
@@ -24,7 +23,7 @@ fmtname(char *path)
 }
 
 void
-ls(char *path)
+find(char *path, char* name)
 {
   char buf[512], *p;
   int fd;
@@ -44,7 +43,9 @@ ls(char *path)
 
   switch(st.type){
   case T_FILE:
-    printf("%s %d %d %l\n", fmtname(path), st.type, st.ino, st.size);
+    if(strcmp(name,fmtname(path)) == 0){
+      printf("%s\n", path);
+    }
     break;
 
   case T_DIR:
@@ -64,23 +65,23 @@ ls(char *path)
         printf("ls: cannot stat %s\n", buf);
         continue;
       }
-      printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
+      if(!strcmp(de.name, ".") || !strcmp(de.name, "..")) continue;
+      find(buf, name);
     }
     break;
   }
   close(fd);
 }
 
+
 int
 main(int argc, char *argv[])
 {
-  int i;
-
-  if(argc < 2){
-    ls(".");
+    if(argc != 3){
+        fprintf(2, "usage: find <path> <filename>\n");
+        exit(1);
+    }
+	find(argv[1], argv[2]);
     exit(0);
-  }
-  for(i=1; i<argc; i++)
-    ls(argv[i]);
-  exit(0);
 }
+
